@@ -88,6 +88,6 @@
     "prefer-template": "error",
     "quotes": ["error", "single", { "allowTemplateLiterals": true }],
     "use-isnan": "error",
-    "yoda": "error", // disallow Yoda conditions
+    "yoda": "error"  // disallow Yoda conditions
   }
 }

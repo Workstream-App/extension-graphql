@@ -1,4 +1,4 @@
-name: Unique Key Parser Package
+name: Extension Graphql Package
 
 on:
   pull_request:
