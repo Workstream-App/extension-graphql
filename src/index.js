@@ -10,7 +10,7 @@ export var Events;
 })(Events || (Events = {}));
 export class Graphql {
     /**
-     * Constructor
+     * Constructor woot
      */
     constructor(configuration) {
         this.configuration = {
