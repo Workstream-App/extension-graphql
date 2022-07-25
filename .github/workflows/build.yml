@@ -1,0 +1,80 @@
+name: Unique Key Parser Package
+
+on:
+  pull_request:
+    branches:
+      - main
+    types: [closed]
+  workflow_dispatch:
+
+jobs:
+  build:
+    name: "Building"
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+      - run: yarn install
+      - run: yarn test
+
+  package:
+    name: "Packaging"
+    needs: [build]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Use Node.js 16.x
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+      - run: yarn install
+      - run: npm version minor --no-git-tag-version
+      - run: yarn build
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        id: create-pr
+      - run: echo '${{steps.create-pr.outputs.pull-request-number}}'
+      - run: echo 'Pull Request URL - ${{ steps.create-pr.outputs.pull-request-url }}'
+      - run: | # approve the pull request
+         curl --request POST \
+         --url https://api.github.com/repos/${{github.repository}}/pulls/${{ steps.create-pr.outputs.pull-request-number }}/reviews \
+         --header 'authorization: Bearer ${{ secrets.VERSION_BUMP }}' \
+         --header 'content-type: application/json' \
+         -d '{"event":"APPROVE"}'
+      - name: Merge Pull Request
+        uses: juliangruber/merge-pull-request-action@v1
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          number: ${{ steps.create-pr.outputs.pull-request-number }}
+          method: squash
+      - run: npm pack
+      - name: Upload
+        uses: actions/upload-artifact@v2
+        with:
+            name: package
+            path: "*.tgz"
+
+  publish:
+    name: "Publish to GitHub Packages"
+    needs: [package]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Upload
+      uses: actions/download-artifact@v2
+      with:
+        name: package
+    - uses: actions/setup-node@v2
+      with:
+        node-version: 16.x
+        registry-url: https://npm.pkg.github.com/
+        scope: "@Workstream-App"
+    - run: echo "registry=https://npm.pkg.github.com/@workstream-app" >> .npmrc
+    - run: cat .npmrc
+    - run: npm publish $(ls *.tgz)
+      env:
+        NODE_AUTH_TOKEN: ${{secrets.PACKAGES}}
