@@ -1,0 +1,160 @@
+{
+  // ===
+  // Spacing
+  // ===
+
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "editor.trimAutoWhitespace": true,
+  "files.trimTrailingWhitespace": true,
+  "files.eol": "\n",
+  "files.insertFinalNewline": true,
+  "files.trimFinalNewlines": true,
+
+  // ===
+  // Files
+  // ===
+
+  "files.exclude": {
+    "**/*.log": true,
+    "**/*.log*": true,
+    "**/dist": false,
+    "**/build": true,
+    "**/coverage": false
+  },
+  "files.associations": {
+    ".markdownlintrc": "jsonc"
+  },
+
+  // ===
+  // Event Triggers
+  // ===
+
+  "editor.formatOnSave": true,
+  // "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.defaultFormatter": "dbaeumer.vscode-eslint",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true,
+    "source.fixAll.stylelint": true,
+    "source.fixAll.markdownlint": true
+  },
+  "editor.tabCompletion": "onlySnippets",
+  "editor.quickSuggestions": {
+    "strings": true,
+  },
+
+  "eslint.validate": [
+    "javascript",
+    "javascriptreact",
+    "html"
+  ],
+
+  "vetur.validation.template": false,
+  "vetur.validation.script": false,
+  "vetur.validation.style": false,
+  "vetur.format.enable": false,
+
+  // ===
+  // HTML
+  // ===
+
+  "html.format.enable": false,
+  "emmet.triggerExpansionOnTab": true,
+  "emmet.includeLanguages": {
+    "vue-html": "html"
+  },
+
+
+  // ===
+  // JS(ON)
+  // ===
+
+  "jest.autoRun": "off",
+  "jest.enableCodeLens": false,
+  "javascript.format.enable": false,
+  "json.format.enable": false,
+
+  // ===
+  // CSS
+  // ===
+  "stylelint.enable": true,
+  "css.validate": false,
+  "scss.validate": false,
+
+  // ===
+  // MARKDOWN
+  // ===
+
+  "[markdown]": {
+    "editor.wordWrap": "wordWrapColumn",
+    "editor.wordWrapColumn": 80
+  },
+  "prettier.singleQuote": true,
+  "javascript.preferences.quoteStyle": "single",
+  "typescript.preferences.quoteStyle": "single",
+
+// ===
+// TODO Highlight
+// ===
+"todohighlight.isEnable": true,
+"todohighlight.keywords": [
+      "DEBUG:",
+      "REVIEW:",
+      "???:",
+      "WTF:",
+      {
+          "text": "NOTE:",
+          "color": "#ecf0f1",
+          "border": "1px solid #2980b9",
+          "borderRadius": "4px",
+          "backgroundColor": "#3498db",
+      },
+      {
+          "text": "HACK:",
+          "color": "#000",
+          "isWholeLine": false,
+      },
+      {
+          "text": "TODO:",
+          "color": "#ffffff",
+          "border": "1px solid teal",
+          "backgroundColor": "teal",
+          //other styling properties goes here ...
+      } ,
+      {
+          "text": "FIXME:",
+          "color": "white",
+          "border": "1px solid hotpink",
+          "backgroundColor": "hotpink",
+          //other styling properties goes here ...
+      },
+      {
+          "text": "XXX:",
+          "color": "white",
+          "border": "1px solid royalblue",
+          "backgroundColor": "royalblue",
+          //other styling properties goes here ...
+      },
+      {
+        "text": "ISSUE:",
+        "color": "white",
+        "border": "1px solid purple",
+        "backgroundColor": "purple",
+        //other styling properties goes here ...
+    }
+    ],
+  "todohighlight.defaultStyle": {
+      "color": "purple",
+      "backgroundColor": "#ffab00",
+      "overviewRulerColor": "#ffab00",
+      "cursor": "pointer",
+      "border": "1px solid #eee",
+      "borderRadius": "4px",
+      "isWholeLine": false,
+      //other styling properties goes here ...
+  },
+  "eslint.alwaysShowStatus": true,
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  }
+}
