@@ -4,7 +4,7 @@
     "node": true,
     "jest": true
   },
-  "extends": ["airbnb-base", "plugin:jest/recommended", "plugin:security/recommended", "plugin:prettier/recommended"],
+  "extends": ["google", "plugin:jest/recommended", "plugin:security/recommended", "plugin:prettier/recommended"],
   "plugins": ["jest", "security", "prettier"],
   "parserOptions": {
     "ecmaVersion": 2020
@@ -87,7 +87,8 @@
     "prefer-spread": "error",
     "prefer-template": "error",
     "quotes": ["error", "single", { "allowTemplateLiterals": true }],
+    "semi": ["error", "always"],
     "use-isnan": "error",
-    "yoda": "error", // disallow Yoda conditions
+    "yoda": "error" // disallow Yoda conditions
   }
 }

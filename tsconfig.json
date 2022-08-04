@@ -3,34 +3,33 @@
     "target": "es2019",
     "module": "esnext",
     "strict": true,
+    "declaration": true,
+    "declarationDir": "./dist",
+    "declarationMap": true,
     "jsx": "preserve",
     "importHelpers": true,
     "resolveJsonModule": true,
-    "moduleResolution": "node",
+    "moduleResolution": "nodenext",
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "sourceMap": true,
     "baseUrl": ".",
     "rootDir": ".",
+    "outDir": "./dist",
     "allowJs": false,
     "checkJs": false,
-    "paths": {
-      "@workstream/*": [
-        "./src",
-        "./dist"
-      ]
-    },
     "lib": [
       "esnext",
       "dom",
     ]
   },
   "include": [
-    "**/*.ts"
+    "./src/**/*.ts"
   ],
   "exclude": [
     "**/node_modules",
     "**/dist"
-  ]
+  ],
+
 }

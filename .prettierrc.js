@@ -17,12 +17,6 @@ module.exports = {
       options: {
         parser:"html"
       }
-    },
-    {
-      files: "*.vue",
-      options: {
-        parser:"vue"
-      }
     }
   ]
 };
