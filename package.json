@@ -1,6 +1,6 @@
 {
   "name": "@workstream-app/extension-graphql",
-  "version": "0.2.44",
+  "version": "0.2.45",
   "description": "hocuspocus webhook extension workstream.io",
   "homepage": "https://hocuspocus.dev",
   "keywords": [
@@ -77,7 +77,7 @@
   },
   "resolutions": {
     "prosemirror-view": "^1.27.0",
-    "prosemirror-model": "^1.18.1",
+    "prosemirror-model": "1.8.2",
     "yjs": "^13.5.41"
   }
 }
