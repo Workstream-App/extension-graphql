@@ -1,6 +1,6 @@
 {
   "name": "@workstream-app/extension-graphql",
-  "version": "0.2.75",
+  "version": "0.3.0",
   "description": "hocuspocus webhook extension workstream.io",
   "homepage": "https://hocuspocus.dev",
   "keywords": [
@@ -36,8 +36,7 @@
     "testx": "ava",
     "test": "echo \"no test specified yet\"",
     "test:watch": "ava --watch",
-    "buildx": "tsc --build tsconfig.json",
-    "build": "yarn version --patch && rollup -c",
+    "build": "rollup -c",
     "clean": "rm -Rf ./dist",
     "release": "npm run lint && npm run test && npm run build && lerna publish --no-private"
   },
