@@ -4,7 +4,6 @@ import {
   onAuthenticatePayload,
   onChangePayload,
   onLoadDocumentPayload,
-  onDisconnectPayload,
   // @ts-ignore
 } from '@hocuspocus/server'
 // @ts-ignore
@@ -12,7 +11,7 @@ import { Transformer } from '@hocuspocus/transformer'
 // @ts-ignore
 import axios, { AxiosResponse } from 'axios'
 
-import { applyUpdate, encodeStateAsUpdate, Doc } from 'yjs';
+// import { applyUpdate, encodeStateAsUpdate, Doc } from 'yjs';
 
 const DEBUG = false;
 
@@ -20,12 +19,21 @@ export enum Events {
   onAuthenticate = 'authenticate',
   onChange = 'change',
   onConnect = 'connect',
-  onCreate = 'create',
+  onLoad = 'load',
   onDisconnect = 'disconnect',
 }
 
+/**
+ * Defines a data type that contains the TipTap data.
+ */
 export interface TypesConfig {
-  [key: string]: { loadGQL: string; saveGQL: string, saveVars: Function, loadVars: Function };
+  [key: string]: {
+    loadGQL: string,
+    saveGQL: string,
+    saveVars: Function,
+    loadVars: Function,
+    getJson: Function
+  },
 };
 
 export interface Configuration {
@@ -43,7 +51,22 @@ export interface Configuration {
 const MODULE_NAME = 'Graphql'
 
 export class Graphql implements Extension {
-  private logger: any;
+  /**
+   * Constructor
+   */
+   constructor(configuration?: Partial<Configuration>) {
+    this.configuration = {
+      ...this.configuration,
+      ...configuration,
+    }
+
+    if (!this.configuration.url) {
+      throw new Error('url is required!')
+    }
+  }
+
+  // ============================================================================================
+
   configuration: Configuration = {
     debounce: 2000,
     debounceMaxWait: 10000,
@@ -54,24 +77,13 @@ export class Graphql implements Extension {
     parseName: (name: string) => name ,
     userGQL: null,
     types: {},
+  };
 
-  }
+  // ============================================================================================
 
   debounced: Map<string, { timeout: NodeJS.Timeout, start: number }> = new Map()
 
-  /**
-   * Constructor
-   */
-  constructor(configuration?: Partial<Configuration>) {
-    this.configuration = {
-      ...this.configuration,
-      ...configuration,
-    }
-
-    if (!this.configuration.url) {
-      throw new Error('url is required!')
-    }
-  }
+  // ============================================================================================
 
   /**
    * debounce the given function, using the given identifier
@@ -85,14 +97,20 @@ export class Graphql implements Extension {
       func()
     }
 
-    if (old?.timeout) clearTimeout(old.timeout)
-    if (Date.now() - start >= this.configuration.debounceMaxWait) return run()
+    if (old?.timeout) {
+      clearTimeout(old.timeout);
+    }
+    if (Date.now() - start >= this.configuration.debounceMaxWait) {
+      return run();
+    }
 
     this.debounced.set(id, {
       start,
       timeout: setTimeout(run, <number> this.configuration.debounce),
     })
   }
+
+  // ============================================================================================
 
   /**
    * Send a request to the given url containing the given data
@@ -110,6 +128,114 @@ export class Graphql implements Extension {
       }},
     )
   }
+
+// ============================================================================================
+
+  /**
+   * onAuthenticate hook
+   * @param data onAuthenticatePayload
+   * @returns Promise<void>
+   */
+  async onAuthenticate(data: onAuthenticatePayload){
+    const { token } = data;
+    if (!this.configuration.events.includes(Events.onAuthenticate)) {
+      return
+    }
+    return this.sendRequest( {
+      context: { token },
+      gql: this.configuration.userGQL,
+    })
+    .then((resp) => {
+      if ( resp.data.errors ) {
+        // throw new Error(resp.data.errors[0].message);
+        return null;
+      }
+      const user = resp.data.data.user;
+      return { user, token };
+    });
+  }
+
+  // ============================================================================================
+
+  /**
+   * onLoadDocument hook
+   * @param data onLoadDocumentPayload
+   * @returns Promise<void>
+   */
+  async onLoadDocument(data: onLoadDocumentPayload) {
+    if (!this.configuration.events.includes(Events.onLoad)) {
+      return null;
+    }
+
+    const { documentName, context } = data;
+    const name = this.configuration.parseName(documentName) || documentName;
+    const fieldName = 'default';
+
+    // Check if the given field already exists in the given y-doc.
+    // Important: Only import a document if it doesn't exist in the primary data storage!
+    if (!data.document.isEmpty(fieldName)) {
+      return
+    }
+
+    const type = this.configuration.types[name.entityType];
+    return this.sendRequest( {
+      documentName,
+      context,
+      gql: type.loadGQL,
+      variables: type.loadVars(name.entityID),
+    })
+    .then((resp) => {
+      if ( resp.data.errors ) {
+        console.error(`[${MODULE_NAME}.onLoadDocument] Loading document from graphql storage FAILED: ${resp.data.errors[0].message}`);
+        data.document.destroy();
+        return null;
+        // throw new Error(resp.data.errors[0].message);
+      }
+      // console.info(`[${MODULE_NAME}.onLoadDocument] Persisted document found. Apply its state as an update`);
+
+      const json = type.getJson(resp.data.data, context); // resp.data.data.assetDescription.content.json;
+
+      data.document.getMap(this.configuration.metaDataKey).set('READY', true);
+      return this.configuration.transformer?.toYdoc(json, fieldName);
+    });
+  }
+
+  // ============================================================================================
+
+  /**
+   * onChange hook
+   * @param data onChangePayload
+   * @returns Promise<void>
+   */
+  async onChange(data: onChangePayload) {
+    if (!this.configuration.events.includes(Events.onChange)) {
+      return
+    }
+    const { documentName, context } = data;
+    const name = this.configuration.parseName(documentName) || documentName;
+    const type = this.configuration.types[name.entityType];
+
+    const save = () => {
+      this.sendRequest({
+        documentName: data.documentName,
+        context: data.context,
+        gql: type.saveGQL,
+        variables: type.saveVars(name.entityID, data),
+       })
+       .then((resp) => {
+        if ( resp.data.errors ) {
+          console.error(`[${MODULE_NAME}.onChange] Saving document to graphql storage FAILED: ${resp.data.errors[0].message}`);
+        }
+      });
+    }
+
+    if (!this.configuration.debounce) {
+      return save()
+    }
+
+    this.debounce(data.documentName, save)
+  }
+
 
   /**
    * Save the current YDoc binary to our API
@@ -129,125 +255,8 @@ export class Graphql implements Extension {
   //   // await mockSave(base64EncodedDocument)
   // }
 
-
-  /**
-   * onAuthenticate hook
-   * @param data onAuthenticatePayload
-   * @returns Promise<void>
-   * @throws Error
-   */
-  async onAuthenticate(data: onAuthenticatePayload){
-    const { token, requestHeaders } = data;
-    if (!this.configuration.events.includes(Events.onAuthenticate)) {
-      return
-    }
-    return this.sendRequest( {
-      context: { token },
-      // requestHeaders,
-      // requestParameters: Object.fromEntries(data.requestParameters.entries()),
-      gql: this.configuration.userGQL,
-    })
-    .then((resp) => {
-      if ( resp.data.errors ) {
-        throw new Error(resp.data.errors[0].message);
-      }
-      const user = resp.data.data.user;
-      return { user, token };
-    });
-  }
-
-
-
-
-  /**
-   * onLoadDocument hook
-   * @param data onLoadDocumentPayload
-   * @returns Promise<void>
-   * @throws Error
-   */
-  async onLoadDocument(data: onLoadDocumentPayload) {
-    const { documentName, context } = data;
-    if (!this.configuration.events.includes(Events.onCreate)) {
-      return null;
-    }
-
-    const name = this.configuration.parseName(documentName) || documentName;
-    // const [workspace, workspaceId, entityType, entityID] = documentName.split('.');
-    const fieldName = 'default';
-
-    // Check if the given field already exists in the given y-doc.
-    // Important: Only import a document if it doesn't exist in the primary data storage!
-    if (!data.document.isEmpty(fieldName)) {
-      return
-    }
-
-    const type = this.configuration.types[name.entityType];
-
-    // console.log('on load types:',type, entityType, entityID);
-    return this.sendRequest( {
-      documentName,
-      context,
-      gql: type.loadGQL,
-      variables: type.loadVars(name.entityID),
-    })
-    .then((resp) => {
-      if ( resp.data.errors ) {
-        console.error(`[${MODULE_NAME}.onLoadDocument] Loading document from graphql storage FAILED: ${resp.data.errors[0].message}`);
-        data.document.destroy();
-        throw new Error(resp.data.errors[0].message);
-      }
-      console.info(`[${MODULE_NAME}.onLoadDocument] Persisted document found. Apply its state as an update`);
-
-      const json = resp.data.data.assetDescription.content.json;
-
       // if ( ydoc ) {
       //   applyUpdate(data.document, encodeStateAsUpdate(ydoc));
       //   return ydoc;
       // }
-
-      data.document.getMap(this.configuration.metaDataKey).set('READY', true);
-      return this.configuration.transformer?.toYdoc(json, fieldName);;
-    });
-  }
-
-
-  /**
-   * onChange hook
-   * @param data onChangePayload
-   * @returns Promise<void>
-   * @throws Error
-   */
-  async onChange(data: onChangePayload) {
-
-    if (!this.configuration.events.includes(Events.onChange)) {
-      return
-    }
-    const { documentName, context } = data;
-    // const [workspace, workspaceId, entityType, entityID] = documentName.split('.');
-    const name = this.configuration.parseName(documentName) || documentName;
-    const type = this.configuration.types[name.entityType];
-
-    const save = () => {
-      this.sendRequest({
-        documentName: data.documentName,
-        context: data.context,
-        gql: type.saveGQL,
-        variables: type.saveVars(name.entityID, data.document),
-       })
-       .then((resp) => {
-        if ( resp.data.errors ) {
-          console.error(`[${MODULE_NAME}.onChange] Saving document to graphql storage FAILED: ${resp.data.errors[0].message}`);
-          // data.document.destroy();
-          // throw new Error(resp.data.errors[0].message);
-          // return null;
-        }
-      });
-    }
-
-    if (!this.configuration.debounce) {
-      return save()
-    }
-
-    this.debounce(data.documentName, save)
-  }
 }
