@@ -10,6 +10,8 @@ import {
 import { Transformer } from '@hocuspocus/transformer'
 // @ts-ignore
 import axios, { AxiosResponse } from 'axios'
+import * as Y from 'yjs';
+import { fromUint8Array, toUint8Array } from 'js-base64';
 
 // import { applyUpdate, encodeStateAsUpdate, Doc } from 'yjs';
 
@@ -32,7 +34,9 @@ export interface TypesConfig {
     saveGQL: string,
     saveVars: Function,
     loadVars: Function,
-    getJson: Function
+    getJson: Function,
+    hasYdocState: Function,
+    getYdocState: Function,
   },
 };
 
@@ -191,12 +195,23 @@ export class Graphql implements Extension {
         return null;
         // throw new Error(resp.data.errors[0].message);
       }
-      // console.info(`[${MODULE_NAME}.onLoadDocument] Persisted document found. Apply its state as an update`);
 
-      const json = type.getJson(resp.data.data, context); // resp.data.data.assetDescription.content.json;
 
+      if( type.hasYdocState(resp.data.data) ) {
+        const binaryEncoded = toUint8Array(type.getYdocState(resp.data.data));
+        Y.applyUpdate(data.document, binaryEncoded);
+        return data.document;
+      }
+
+      const json = type.getJson(resp.data.data, data);
+      if( !json ) {
+        return;
+      }
       data.document.getMap(this.configuration.metaDataKey).set('READY', true);
-      return this.configuration.transformer?.toYdoc(json, fieldName);
+      data.document.merge(this.configuration.transformer?.toYdoc(json, fieldName) || new Y.Doc());
+    },
+    (err) => {
+      console.error(`[${MODULE_NAME}.onLoadDocument] Loading document from graphql storage FAILED: ${err}`);
     });
   }
 
@@ -225,8 +240,12 @@ export class Graphql implements Extension {
        .then((resp) => {
         if ( resp.data.errors ) {
           console.error(`[${MODULE_NAME}.onChange] Saving document to graphql storage FAILED: ${resp.data.errors[0].message}`);
+          console.info(`[${MODULE_NAME}.onChange] Graphql variables: ${JSON.stringify(type.saveVars(name.entityID, data))}`);
         }
-      });
+      },
+        (err) => {
+          console.error(`[${MODULE_NAME}.onChange] Saving document from graphql storage FAILED: ${err}`);
+        });
     }
 
     if (!this.configuration.debounce) {
@@ -237,26 +256,4 @@ export class Graphql implements Extension {
   }
 
 
-  /**
-   * Save the current YDoc binary to our API
-   */
-  // async save(docId: string, document: Doc): Promise<void> {
-  //   console.info({
-  //     label: `${MODULE_NAME}.save`,
-  //     message: `${docId} - Saving YDoc to durable storage`,
-  //   })
-  //   if (DEBUG) {
-  //     const prosemirrorJSON = TiptapTransformer.fromYdoc(document, 'default')
-  //     console.log('[prosemirrorJSON]', JSON.stringify(prosemirrorJSON))
-  //   }
-  //   const documentState = encodeStateAsUpdate(document) // is a Uint8Array
-  //   // const base64EncodedDocument = JSBase64.fromUint8Array(documentState)
-  //   // POST base64EncodedDocument to the API
-  //   // await mockSave(base64EncodedDocument)
-  // }
-
-      // if ( ydoc ) {
-      //   applyUpdate(data.document, encodeStateAsUpdate(ydoc));
-      //   return ydoc;
-      // }
 }
