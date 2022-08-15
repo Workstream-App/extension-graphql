@@ -31,5 +31,9 @@
     "**/node_modules",
     "**/dist"
   ],
+  "typeRoots": [
+    "./types.d.ts",
+    "./node_modules/@types/"
+  ]
 
 }
