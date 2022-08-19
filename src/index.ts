@@ -11,11 +11,7 @@ import { Transformer } from '@hocuspocus/transformer'
 // @ts-ignore
 import axios, { AxiosResponse } from 'axios'
 import * as Y from 'yjs';
-import { fromUint8Array, toUint8Array } from 'js-base64';
-
-// import { applyUpdate, encodeStateAsUpdate, Doc } from 'yjs';
-
-const DEBUG = false;
+import { toUint8Array } from 'js-base64';
 
 export enum Events {
   onAuthenticate = 'authenticate',
@@ -133,6 +129,27 @@ export class Graphql implements Extension {
     )
   }
 
+  save(data: onLoadDocumentPayload | onChangePayload) {
+    const { documentName, context } = data;
+    const name = this.configuration.parseName(documentName) || documentName;
+    const type = this.configuration.types[name.entityType];
+    this.sendRequest({
+      documentName: data.documentName,
+      context: data.context,
+      gql: type.saveGQL,
+      variables: type.saveVars(name.entityID, data),
+     })
+     .then((resp) => {
+      if ( resp.data.errors ) {
+        console.error(`[${MODULE_NAME}.onChange] Saving document to graphql storage FAILED: ${resp.data.errors[0].message}`);
+        console.info(`[${MODULE_NAME}.onChange] Graphql variables: ${JSON.stringify(type.saveVars(name.entityID, data))}`);
+      }
+    },
+      (err) => {
+        console.error(`[${MODULE_NAME}.onChange] Saving document from graphql storage FAILED: ${err}`);
+      });
+  }
+
 // ============================================================================================
 
   /**
@@ -207,8 +224,10 @@ export class Graphql implements Extension {
       if( !json ) {
         return;
       }
+
       data.document.getMap(this.configuration.metaDataKey).set('READY', true);
       data.document.merge(this.configuration.transformer?.toYdoc(json, fieldName) || new Y.Doc());
+      this.save(data);
     },
     (err) => {
       console.error(`[${MODULE_NAME}.onLoadDocument] Loading document from graphql storage FAILED: ${err}`);
@@ -226,33 +245,14 @@ export class Graphql implements Extension {
     if (!this.configuration.events.includes(Events.onChange)) {
       return
     }
-    const { documentName, context } = data;
-    const name = this.configuration.parseName(documentName) || documentName;
-    const type = this.configuration.types[name.entityType];
 
-    const save = () => {
-      this.sendRequest({
-        documentName: data.documentName,
-        context: data.context,
-        gql: type.saveGQL,
-        variables: type.saveVars(name.entityID, data),
-       })
-       .then((resp) => {
-        if ( resp.data.errors ) {
-          console.error(`[${MODULE_NAME}.onChange] Saving document to graphql storage FAILED: ${resp.data.errors[0].message}`);
-          console.info(`[${MODULE_NAME}.onChange] Graphql variables: ${JSON.stringify(type.saveVars(name.entityID, data))}`);
-        }
-      },
-        (err) => {
-          console.error(`[${MODULE_NAME}.onChange] Saving document from graphql storage FAILED: ${err}`);
-        });
-    }
+    this.save(data);
 
     if (!this.configuration.debounce) {
-      return save()
+      return this.save(data)
     }
 
-    this.debounce(data.documentName, save)
+    this.debounce(data.documentName, this.save)
   }
 
 
