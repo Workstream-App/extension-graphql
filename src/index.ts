@@ -246,13 +246,11 @@ export class Graphql implements Extension {
       return
     }
 
-    this.save(data);
-
     if (!this.configuration.debounce) {
       return this.save(data)
     }
 
-    this.debounce(data.documentName, this.save)
+    this.debounce(data.documentName, this.save.bind( this, data ));
   }
 
 
