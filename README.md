@@ -6,9 +6,13 @@
 
 ## Installation
 
-`$ npm install @Workstream-App/extension-graphql`
-
-Or add this package to your `package.json` file:
+```bash
+$ npm install @Workstream-App/extension-graphql
+or
+$ yarn add @Workstream-App/extension-graphql
+or
+add this package to your `package.json` file:
+```
 
 ```json
 "dependencies": {
@@ -94,7 +98,7 @@ const entityTypes = {
     },
 
     // [required] after data is loaded from the server,
-    // Doest this data have a ydoc (there is an option to import if needed)
+    // Does this data have a ydoc (there is an option to import if needed)
     hasYdocState: (graphQlResp) => {
       return (
         graphQlResp.entity1.ydoc &&
@@ -108,7 +112,7 @@ const entityTypes = {
 
     // [optional] if the data needs to be imported,  return the json state
     getJson: (graphQlResp, data) => {
-      const html = graphQlResp.entiry1.html || '<p></p>';
+      const html = graphQlResp.entity1.html || '<p></p>';
       return generateJSON(html, extensions);
     },
   },
