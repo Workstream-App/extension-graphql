@@ -78,7 +78,8 @@
     "typescript": "^4.7.4"
   },
   "resolutions": {
-    "@tiptap/starter-kit": "^2.0.0-beta.197",
+    "prosemirror-view": "^1.27.0",
+    "prosemirror-model": "1.16.1",
     "yjs": "^13.5.41"
   }
 }
