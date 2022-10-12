@@ -5,13 +5,11 @@
     "aeschli.vscode-css-formatter",
     "coenraads.bracket-pair-colorizer-2",
     "dariofuzinato.vue-peek",
-    "DavidAnson.vscode-markdownlint",
-    "esbenp.prettier-vscode",
+    "davidanson.vscode-markdownlint",
     "gruntfuggly.todo-tree",
     "knisterpeter.vscode-github",
     "mgmcdermott.vscode-language-babel",
     "mrmlnc.vscode-scss",
-    "oderwat.indent-rainbow",
     "sburg.vscode-javascript-booster",
     "shaharkazaz.git-merger",
     "stylelint.vscode-stylelint",
@@ -21,5 +19,6 @@
     "xabikos.javascriptsnippets",
     "formulahendry.auto-rename-tag",
     "kumar-harsh.graphql-for-vscode",
+    "CoenraadS.bracket-pair-colorizer-2"
   ]
 }
