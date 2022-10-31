@@ -45,18 +45,18 @@
     "@tiptap/starter-kit": "2.0.0-beta.199",
     "@tiptap/suggestion": "2.0.0-beta.199",
     "@types/js-base64": "^3.3.1",
-    "@types/node": "^18.8.5",
+    "@types/node": "^18.11.7",
     "axios": "^0.27.2",
     "eslint-config-google": "^0.14.0",
     "js-base64": "^3.7.2",
-    "yjs": "^13.5.41"
+    "yjs": "^13.5.42"
   },
   "devDependencies": {
     "@atomico/rollup-plugin-sizes": "^1.1.4",
     "@ava/typescript": "^3.0.1",
-    "@babel/core": "^7.19.3",
+    "@babel/core": "^7.19.6",
     "@babel/eslint-parser": "^7.19.1",
-    "@babel/preset-env": "^7.19.3",
+    "@babel/preset-env": "^7.19.4",
     "@rollup/plugin-babel": "^5.3.1",
     "@rollup/plugin-commonjs": "^22.0.2",
     "@rollup/plugin-json": "^4.1.0",
@@ -64,8 +64,8 @@
     "@typescript-eslint/eslint-plugin": "^5.32.0",
     "@typescript-eslint/parser": "^5.32.0",
     "ava": "^4.3.1",
-    "concurrently": "^7.3.0",
-    "eslint": "^8.24.0",
+    "concurrently": "^7.5.0",
+    "eslint": "^8.26.0",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-plugin-html": "^7.1.0",
     "eslint-plugin-import": "^2.26.0",
@@ -80,6 +80,6 @@
   "resolutions": {
     "prosemirror-view": "^1.27.0",
     "prosemirror-model": "1.16.1",
-    "yjs": "^13.5.41"
+    "yjs": "^13.5.42"
   }
 }
