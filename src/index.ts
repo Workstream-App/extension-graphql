@@ -168,12 +168,15 @@ export class Graphql implements Extension {
     })
     .then((resp) => {
       if ( resp.data.errors ) {
-        // throw new Error(resp.data.errors[0].message);
-        return null;
+        console.error(`[${MODULE_NAME}.onAuthenticate] Loading user from graphql storage FAILED: ${resp.data.errors[0].message}`);
+        throw new Error('Not authorized!')
       }
       const user = resp.data.data.user;
       return { user, token };
-    });
+    },
+    (err) => {
+      console.error(`[${MODULE_NAME}.onAuthenticate] Server Error: Loading user from graphql storage FAILED: ${err}`);
+      throw new Error(err); });
   }
 
   // ============================================================================================
@@ -230,7 +233,7 @@ export class Graphql implements Extension {
       this.save(data);
     },
     (err) => {
-      console.error(`[${MODULE_NAME}.onLoadDocument] Loading document from graphql storage FAILED: ${err}`);
+      console.error(`[${MODULE_NAME}.onLoadDocument] Server Error: Loading document from graphql storage FAILED: ${err}`);
     });
   }
 
