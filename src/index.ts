@@ -9,7 +9,7 @@ import {
 // @ts-ignore
 import { Transformer } from '@hocuspocus/transformer'
 // @ts-ignore
-import axios, { AxiosResponse } from 'axios'
+import axios from 'axios'
 import * as Y from 'yjs';
 import { toUint8Array } from 'js-base64';
 
@@ -116,7 +116,6 @@ export class Graphql implements Extension {
    * Send a request to the given url containing the given data
    */
   async sendRequest( payload: any) {
-    // console.log('sendRequest variables', payload.variables);
     const json = JSON.stringify({ query: payload.gql, variables: payload.variables });
     // @ts-ignore
     return axios.post(
@@ -133,11 +132,17 @@ export class Graphql implements Extension {
     const { documentName, context } = data;
     const name = this.configuration.parseName(documentName) || documentName;
     const type = this.configuration.types[name.entityType];
+    const variables = type.saveVars(name.entityID, data);
+    if( !variables ) {
+      console.error(`[${MODULE_NAME}.onChange]: Error formating data to save`);
+      return
+    }
+
     this.sendRequest({
       documentName: data.documentName,
       context: data.context,
       gql: type.saveGQL,
-      variables: type.saveVars(name.entityID, data),
+      variables,
      })
      .then((resp) => {
       if ( resp.data.errors ) {
@@ -213,7 +218,6 @@ export class Graphql implements Extension {
         console.error(`[${MODULE_NAME}.onLoadDocument] Loading document from graphql storage FAILED: ${resp.data.errors[0].message}`);
         data.document.destroy();
         return null;
-        // throw new Error(resp.data.errors[0].message);
       }
 
 
