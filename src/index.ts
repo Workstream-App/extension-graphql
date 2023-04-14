@@ -142,12 +142,12 @@ export class Graphql implements Extension {
       documentName: data.documentName,
       context: data.context,
       gql: type.saveGQL,
-      variables,
+      variables: type.saveVars(name.entityID, data, name.workspaceId),
      })
      .then((resp) => {
       if ( resp.data.errors ) {
         console.error(`[${MODULE_NAME}.onChange] Saving document to graphql storage FAILED: ${resp.data.errors[0].message}`);
-        console.info(`[${MODULE_NAME}.onChange] Graphql variables: ${JSON.stringify(type.saveVars(name.entityID, data))}`);
+        console.info(`[${MODULE_NAME}.onChange] Graphql variables: ${JSON.stringify(type.saveVars(name.entityID, data, name.workspaceId))}`);
       }
     },
       (err) => {
@@ -211,7 +211,7 @@ export class Graphql implements Extension {
       documentName,
       context,
       gql: type.loadGQL,
-      variables: type.loadVars(name.entityID),
+      variables: type.loadVars(name.entityID, name.workspaceID),
     })
     .then((resp) => {
       if ( resp.data.errors ) {
