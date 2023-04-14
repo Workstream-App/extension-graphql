@@ -1,6 +1,6 @@
 {
   "name": "@workstream-app/extension-graphql",
-  "version": "0.15.0",
+  "version": "0.16.0",
   "description": "hocuspocus webhook extension workstream.io",
   "homepage": "https://hocuspocus.dev",
   "keywords": [
