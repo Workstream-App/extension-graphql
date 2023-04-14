@@ -40,15 +40,15 @@
     "clean": "rm -Rf ./dist"
   },
   "dependencies": {
-    "@hocuspocus/server": "1.0.2",
-    "@hocuspocus/transformer": "1.0.2",
-    "@tiptap/pm": "^2.0.0-beta.218",
-    "@tiptap/starter-kit": "2.0.0-beta.218",
-    "@types/node": "^18.14.0",
+    "@hocuspocus/server": "2.0.3",
+    "@hocuspocus/transformer": "2.0.3",
+    "@tiptap/pm": "^2.0.3",
+    "@tiptap/starter-kit": "2.0.3",
+    "@types/node": "^18.15.11",
     "axios": "^0.27.2",
     "eslint-config-google": "^0.14.0",
     "js-base64": "^3.7.5",
-    "yjs": "^13.5.46"
+    "yjs": "^13.5.52"
   },
   "devDependencies": {
     "@atomico/rollup-plugin-sizes": "^1.1.4",

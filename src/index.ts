@@ -132,7 +132,7 @@ export class Graphql implements Extension {
     const { documentName, context } = data;
     const name = this.configuration.parseName(documentName) || documentName;
     const type = this.configuration.types[name.entityType];
-    const variables = type.saveVars(name.entityID, data);
+    const variables = type.saveVars(name.entityID, data, name.workspaceId);
     if( !variables ) {
       console.error(`[${MODULE_NAME}.onChange]: Error formating data to save`);
       return
@@ -142,7 +142,7 @@ export class Graphql implements Extension {
       documentName: data.documentName,
       context: data.context,
       gql: type.saveGQL,
-      variables: type.saveVars(name.entityID, data, name.workspaceId),
+      variables,
      })
      .then((resp) => {
       if ( resp.data.errors ) {
