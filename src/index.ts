@@ -132,7 +132,7 @@ export class Graphql implements Extension {
     const { documentName, context } = data;
     const name = this.configuration.parseName(documentName) || documentName;
     const type = this.configuration.types[name.entityType];
-    const variables = type.saveVars(name.entityID, data);
+    const variables = type.saveVars(name.entityID, data, name.workspaceId);
     if( !variables ) {
       console.error(`[${MODULE_NAME}.onChange]: Error formating data to save`);
       return
@@ -147,7 +147,7 @@ export class Graphql implements Extension {
      .then((resp) => {
       if ( resp.data.errors ) {
         console.error(`[${MODULE_NAME}.onChange] Saving document to graphql storage FAILED: ${resp.data.errors[0].message}`);
-        console.info(`[${MODULE_NAME}.onChange] Graphql variables: ${JSON.stringify(type.saveVars(name.entityID, data))}`);
+        console.info(`[${MODULE_NAME}.onChange] Graphql variables: ${JSON.stringify(type.saveVars(name.entityID, data, name.workspaceId))}`);
       }
     },
       (err) => {
@@ -211,7 +211,7 @@ export class Graphql implements Extension {
       documentName,
       context,
       gql: type.loadGQL,
-      variables: type.loadVars(name.entityID),
+      variables: type.loadVars(name.entityID, name.workspaceID),
     })
     .then((resp) => {
       if ( resp.data.errors ) {
