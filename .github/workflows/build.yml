@@ -36,25 +36,19 @@ jobs:
       - run: npm version minor --no-git-tag-version
       - run: yarn build
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v5
         id: create-pr
-      - run: echo '${{steps.create-pr.outputs.pull-request-number}}'
-      - run: echo 'Pull Request URL - ${{ steps.create-pr.outputs.pull-request-url }}'
-      - run: | # approve the pull request
-         curl --request POST \
-         --url https://api.github.com/repos/${{github.repository}}/pulls/${{ steps.create-pr.outputs.pull-request-number }}/reviews \
-         --header 'authorization: Bearer ${{ secrets.VERSION_BUMP }}' \
-         --header 'content-type: application/json' \
-         -d '{"event":"APPROVE"}'
+      - name: Approve Pull Request
+        run: gh pr review --approve "${{ steps.create-pr.outputs.pull-request-number }}"
+        env:
+          GITHUB_TOKEN: ${{ secrets.PULL_REQUEST_APPROVER }}
       - name: Merge Pull Request
-        uses: juliangruber/merge-pull-request-action@v1
-        with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
-          number: ${{ steps.create-pr.outputs.pull-request-number }}
-          method: squash
+        run: gh pr merge "${{ steps.create-pr.outputs.pull-request-number }}" --squash
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - run: npm pack
       - name: Upload
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
             name: package
             path: "*.tgz"
